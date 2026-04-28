@@ -1,73 +1,87 @@
-## JavaScript Crawlee & CheerioCrawler template
+# Web Title Scraper
 
-This template example was built with [Crawlee](https://crawlee.dev/) to scrape data from a website using [Cheerio](https://cheerio.js.org/) wrapped into [CheerioCrawler](https://crawlee.dev/api/cheerio-crawler/class/CheerioCrawler).
+A lightweight Apify Actor that crawls one or more websites and collects the **page title** and **URL** of every page it visits. Built with Crawlee and Cheerio for fast, efficient HTML scraping — no headless browser required.
 
-## Included features
+## What it does
 
-- **[Apify SDK](https://docs.apify.com/sdk/js)** - toolkit for building [Actors](https://apify.com/actors)
-- **[Crawlee](https://crawlee.dev/)** - web scraping and browser automation library
-- **[Input schema](https://docs.apify.com/platform/actors/development/input-schema)** - define and easily validate a schema for your Actor's input
-- **[Dataset](https://docs.apify.com/sdk/python/docs/concepts/storages#working-with-datasets)** - store structured data where each object stored has the same attributes
-- **[Cheerio](https://cheerio.js.org/)** - a fast, flexible & elegant library for parsing and manipulating HTML and XML
+Starting from the URLs you provide, the actor:
 
-## How it works
+1. Fetches each page using an HTTP request (no browser overhead).
+2. Parses the HTML with Cheerio and extracts the `<title>` tag.
+3. Follows links and continues crawling up to the configured limit.
+4. Saves every `{ url, title }` pair to a structured Dataset.
 
-This code is a JavaScript script that uses Cheerio to scrape data from a website. It then stores the website titles in a dataset.
+The resulting dataset can be exported as JSON, CSV, Excel, or XML directly from the Apify Console.
 
-- The crawler starts with URLs provided from the input `startUrls` field defined by the input schema. Number of scraped pages is limited by `maxPagesPerCrawl` field from the input schema.
-- The crawler uses `requestHandler` for each URL to extract the data from the page with the Cheerio library and to save the title and URL of each page to the dataset. It also logs out each result that is being saved.
+## Input
 
-## Resources
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `startUrls` | array | `https://apify.com` | One or more URLs to start crawling from |
+| `maxRequestsPerCrawl` | integer | `100` | Hard cap on the total number of pages visited |
 
-- [Video tutorial](https://www.youtube.com/watch?v=yTRHomGg9uQ) on building a scraper using CheerioCrawler
-- [Written tutorial](https://docs.apify.com/academy/web-scraping-for-beginners/challenge) on building a scraper using CheerioCrawler
-- [Web scraping with Cheerio in 2023](https://blog.apify.com/web-scraping-with-cheerio/)
-- How to [scrape a dynamic page](https://blog.apify.com/what-is-a-dynamic-page/) using Cheerio
-- [Integration with Zapier](https://apify.com/integrations), Make, Google Drive and others
-- [Video guide on getting data using Apify API](https://www.youtube.com/watch?v=ViYYDHSBAKM)
-- A short guide on how to create Actors using code templates:
+### Example input
 
-[web scraper template](https://www.youtube.com/watch?v=u-i-Korzf8w)
+```json
+{
+  "startUrls": [
+    { "url": "https://example.com" }
+  ],
+  "maxRequestsPerCrawl": 50
+}
+```
 
+## Output
 
-## Getting started
+Each crawled page produces one record in the dataset:
 
-For complete information [see this article](https://docs.apify.com/platform/actors/development#build-actor-locally). To run the Actor use the following command:
+```json
+{
+  "url": "https://example.com/about",
+  "title": "About Us – Example"
+}
+```
+
+## Running locally
+
+Make sure you have Node.js 18+ and the Apify CLI installed.
 
 ```bash
+# Install dependencies
+npm install
+
+# Run the actor locally
 apify run
 ```
 
-## Deploy to Apify
+Results are saved to `./storage/datasets/default/`.
 
-### Connect Git repository to Apify
+## Deploying to Apify
 
-If you've created a Git repository for the project, you can easily connect to Apify:
+### Option A — push from your machine
 
-1. Go to [Actor creation page](https://console.apify.com/actors/new)
-2. Click on **Link Git Repository** button
+```bash
+apify login   # enter your Apify API token when prompted
+apify push    # builds and deploys the actor to Apify Platform
+```
 
-### Push project on your local machine to Apify
+### Option B — link a Git repository
 
-You can also deploy the project on your local machine to Apify without the need for the Git repository.
+1. Open Actor creation in the Apify Console.
+2. Click **Link Git Repository** and point it at this repo.
+3. Every push to the main branch triggers an automatic build.
 
-1. Log in to Apify. You will need to provide your [Apify API Token](https://console.apify.com/account/integrations) to complete this action.
+## Tech stack
 
-    ```bash
-    apify login
-    ```
+| Library | Purpose |
+|---|---|
+| Apify SDK | Actor lifecycle, input/output, proxy |
+| Crawlee | Request queue, crawl orchestration |
+| Cheerio | Fast server-side HTML parsing |
 
-2. Deploy your Actor. This command will deploy and build the Actor on the Apify Platform. You can find your newly created Actor under [Actors -> My Actors](https://console.apify.com/actors?tab=my).
+## Resources
 
-    ```bash
-    apify push
-    ```
-
-## Documentation reference
-
-To learn more about Apify and Actors, take a look at the following resources:
-
-- [Apify SDK for JavaScript documentation](https://docs.apify.com/sdk/js)
-- [Apify SDK for Python documentation](https://docs.apify.com/sdk/python)
-- [Apify Platform documentation](https://docs.apify.com/platform)
-- [Join our developer community on Discord](https://discord.com/invite/jyEM2PRvMU)
+- Apify Platform docs
+- CheerioCrawler API reference
+- Web scraping with Cheerio — Apify Blog
+- Join the Apify developer community on Discord
